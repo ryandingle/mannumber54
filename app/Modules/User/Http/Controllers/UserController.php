@@ -67,13 +67,13 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'firstname'                 => 'required',
             'middlename'                => 'nullable',
             'lastname'                  => 'required',
             'username'                  => 'required|unique:users',
             'email'                     => 'required|email|unique:users',
-            'employee_no'               => 'required|unique:users',
+            'employee_no'               => 'nullable|unique:users',
             'sss_no'                    => 'nullable|unique:users',
             'password'                  => 'required|confirmed|min:6',
             'password_confirmation'     => 'required',
@@ -82,6 +82,11 @@ class UserController extends Controller
             'permissions'               => 'required',
             'status'                    => 'required',
         ]);
+
+        if($validator->fails()) return response()->json([
+            'message'   => 'Given data was invalid.',
+            'errors'    => $validator->errors('firstname')
+        ], 422);
 
         $data  = $this->user->store($request->all());
 
@@ -218,13 +223,13 @@ class UserController extends Controller
 
         if($request->password == '' && $request->password_confirmation == '') $password_require = '|nullable';
 
-        $this->validate($request,[
+        $validator = Validator::make($request->all(),[
             'firstname'                 => 'required',
             'middlename'                => 'nullable',
             'lastname'                  => 'required',
             'username'                  => 'required'.$unique_username.'',
             'email'                     => 'required|email'.$unique_email.'',
-            'employee_no'               => 'required'.$unique_employee_no.'',
+            'employee_no'               => 'nullable'.$unique_employee_no.'',
             'sss_no'                    => 'nullable'.$unique_sss_no.'',
             'password'                  => 'confirmed|min:6'.$password_require.'',
             'password_confirmation'     => ''.$password_require.'',
@@ -233,6 +238,11 @@ class UserController extends Controller
             'permissions'               => 'required',
             'status'                    => 'required',
         ]);
+
+        if($validator->fails()) return response()->json([
+            'message'   => 'Given data was invalid.',
+            'errors'    => $validator->errors('firstname')
+        ], 422);
 
         $old_data   = $this->user->show($id);
         $data       = $this->user->update($id, $request->all());
